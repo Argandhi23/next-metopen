@@ -14,21 +14,26 @@ interface CartContextType {
   updateQuantity: (id: number, quantity: number) => void;
   totalItems: number;
   totalPrice: number;
+  isLoaded: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItemType[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem('cart');
     if (saved) setItems(JSON.parse(saved));
+    setIsLoaded(true);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(items));
-  }, [items]);
+    if (isLoaded) {
+      localStorage.setItem('cart', JSON.stringify(items));
+    }
+  }, [items, isLoaded]);
 
   const addToCart = (product: Product) => {
     setItems(prev => {
@@ -51,7 +56,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const totalPrice = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, totalItems, totalPrice }}>
+    <CartContext.Provider value={{ items, addToCart, removeFromCart, updateQuantity, totalItems, totalPrice, isLoaded }}>
       {children}
     </CartContext.Provider>
   );

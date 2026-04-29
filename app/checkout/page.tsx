@@ -1,12 +1,18 @@
 'use client';
 import { useCart } from '@/components/CartProvider';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function Checkout() {
-  const { items, totalPrice } = useCart();
+  const { items, totalPrice, isLoaded } = useCart();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isLoaded && items.length === 0) {
+      router.push('/cart');
+    }
+  }, [isLoaded, items.length, router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,8 +24,7 @@ export default function Checkout() {
     }, 1000);
   };
 
-  if (items.length === 0) {
-    router.push('/cart');
+  if (!isLoaded || items.length === 0) {
     return null;
   }
 
